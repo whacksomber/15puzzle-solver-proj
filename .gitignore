@@ -2,3 +2,5 @@ blegh.cpp
 a.out
 .vscode/*
 other attempt/*
+.DS_Store
+*.o
