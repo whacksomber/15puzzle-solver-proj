@@ -214,7 +214,7 @@ Board* Board::getParent() {
 }
 
 //overloaded == operator
-bool Board::operator== (const Board &b) {
+bool Board::operator== (const Board &b) const {
     for (int r = 0; r < 4; r++)
         for (int c = 0; c < 4; c++)
             if (state[r][c] != b.state[r][c])
@@ -222,7 +222,7 @@ bool Board::operator== (const Board &b) {
     return true;
 }
 
-bool Board::operator!=(const Board &b) {
+bool Board::operator!=(const Board &b)  const {
     return !(*this == b);
 
     /* for (int r = 0; r < 4; r++)
