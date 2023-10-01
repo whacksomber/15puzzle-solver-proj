@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <queue>
+#include <set>
 #include <algorithm>
 #include "Board.h" //include Board class
 
@@ -15,7 +16,7 @@
  * num = number of nodes generated
  */
 Board best_first_search(Board is, int &num) {
-    Board n (is); //create board/node object n, set to initial state on first iteration
+    Board* current = new Board(is); //create pointer to board object, set to initial state on first iteration
     num = 1;      //set number of nodes generated to 1 (for initial state)
 
     //create two sets of boards, depending on whether nodes are yet to be visited (open) or have already been visited (closed)
@@ -23,11 +24,11 @@ Board best_first_search(Board is, int &num) {
     std::vector<Board> open_vec;     //vector of open nodes, to keep track of duplicates
     std::vector<Board> closed;       //vector of visited boards
 
-    open.push(n); //push initial state onto priority queue
-    open_vec.push_back(n); //push initial state onto vector
+    open.push(*current); //push initial state onto priority queue
+    open_vec.push_back(*current); //push initial state onto vector
 
-    while (!n.isGoal()) { //while goal has not yet been found
-        n.printBoard(); //print current state
+    while (!current->isGoal()) { //while goal has not yet been found
+        current->printBoard(); //print current state
         std::cout << std::endl;
         
         if (open.empty()) { //if open is empty
@@ -37,52 +38,53 @@ Board best_first_search(Board is, int &num) {
 
         //remove n from open and add it to closed
         open.pop();
-        open_vec.erase(std::remove(open_vec.begin(), open_vec.end(), n), open_vec.end());
-        closed.push_back(n);
+        open_vec.erase(std::remove(open_vec.begin(), open_vec.end(), *current), open_vec.end());
+        closed.push_back(*current);
 
         //expand n, get children
-        Board up = n.moveUp();
-        Board down = n.moveDown();
-        Board left = n.moveLeft();
-        Board right = n.moveRight();
+        Board up = current->moveUp();
+        Board down = current->moveDown();
+        Board left = current->moveLeft();
+        Board right = current->moveRight();
 
         //add children to open if they are not already in open or closed and are results of legal moves
-        if (std::find(closed.begin(), closed.end(), up) == closed.end() && up != n
+        if (std::find(closed.begin(), closed.end(), up) == closed.end() && up != *current
             && std::find(open_vec.begin(), open_vec.end(), up) == open_vec.end() ) {
             open.push(up);
             open_vec.push_back(up);
             num++;
         }
-        if (std::find(closed.begin(), closed.end(), down) == closed.end() && down != n
+        if (std::find(closed.begin(), closed.end(), down) == closed.end() && down != *current
             && std::find(open_vec.begin(), open_vec.end(), down) == open_vec.end()) {
             open.push(down);
             open_vec.push_back(down);
             num++;
         }
-        if (std::find(closed.begin(), closed.end(), left) == closed.end() && left != n
+        if (std::find(closed.begin(), closed.end(), left) == closed.end() && left != *current
             && std::find(open_vec.begin(), open_vec.end(), left) == open_vec.end()) {
             open.push(left);
             open_vec.push_back(left);
             num++;
         }
-        if (std::find(closed.begin(), closed.end(), right) == closed.end() && right != n
+        if (std::find(closed.begin(), closed.end(), right) == closed.end() && right != *current
             && std::find(open_vec.begin(), open_vec.end(), right) == open_vec.end()) {
             open.push(right);
             open_vec.push_back(right);
             num++;
         }
         
-        //set n to the next node in open (the one with the lowest heuristic value)
-        n = open.top();
+        //set current pointer to point to the top of the priority queue
+        Board* temp = new Board(open.top()); //create new Board object, set to top of priority queue
+        current = temp; //set current pointer to point to new Board object
 
         //clear screen
-        std::cout << "\033[2J\033[1;1H";
+        //std::cout << "\033[2J\033[1;1H";
     }
 
     //print solution
-    n.printBoard();
+    current->printBoard();
 
-    return n; //return solution
+    return *current; //return solution node
 }
 
 
@@ -111,7 +113,7 @@ int main() {
     
     //output results (if solution is found)
     std::cout << "Solution path (with states): " << std::endl;
-    //solution.printStatePath(); //print path with states 
+    solution.printStatePath(); //print path with states 
     std::cout << "# nodes generated: " << numNodes << std::endl;
     //std::cout << "Length of solution path: " << solution.g() << std::endl;
     std::cout << "Solution path (with operators): " << std::endl;

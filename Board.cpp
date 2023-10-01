@@ -3,6 +3,13 @@
 #include <vector>
 #include <string>
 
+//goal state
+int goal[4][4] = { {1, 2, 3, 4}, 
+                   {5, 6, 7, 8},
+                   {9, 10, 11, 12},
+                   {13, 14, 15, 0}
+                 };
+
 //constructor
 Board::Board(int s[4][4], Board *p) {
     for (int r = 0; r < 4; r++)
@@ -85,10 +92,8 @@ void Board::printBoard() const {
     //make 0 colored red
     for (int r = 0; r < 4; r++) {
         for (int c = 0; c < 4; c++) {
-            if (state[r][c] == 0) {
-                //std::cout << "\033[1;31m" << "X" << "\033[0m" << " ";
-                std::cout << "X" << " ";
-            }
+            if (state[r][c] == 0)
+                std::cout << "\033[1;31m" << "X" << "\033[0m" << " ";
             else
                 std::cout << state[r][c] << " ";
         }
@@ -389,11 +394,13 @@ bool Board::operator!=(const Board &b)  const {
     */
 }
 
+//a problem arises when *this object is being set to its child.
+//the parent of the child is set to the child itself, which is not what we want.
 void Board::operator=(const Board &b) {
     for (int r = 0; r < 4; r++)
         for (int c = 0; c < 4; c++)
             state[r][c] = b.state[r][c];
-    parent = b.parent;
+    parent = b.parent; //problem = child's parent is set to child itself
     op = b.op;
     h = b.h;
 }
