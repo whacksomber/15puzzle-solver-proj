@@ -1,7 +1,8 @@
-blegh.cpp
 a.out
 .vscode/*
 other attempt/*
 .DS_Store
 *.o
+*.exe
 15puzzle
+blegh.cpp
