@@ -6,8 +6,8 @@
 //constructor
 Board::Board(int s[4][4], Board *p) {
     for (int r = 0; r < 4; r++)
-    for (int c = 0; c < 4; c++)
-        state[r][c] = s[r][c];
+        for (int c = 0; c < 4; c++)
+            state[r][c] = s[r][c];
     parent = p;
 }
 
@@ -44,8 +44,8 @@ Board::Board(std::istream& i) {
 //constructor (for debugging, delete later)
 Board::Board(int s[4][4]) {
     for (int r = 0; r < 4; r++)
-    for (int c = 0; c < 4; c++)
-        state[r][c] = s[r][c];
+        for (int c = 0; c < 4; c++)
+            state[r][c] = s[r][c];
     parent = NULL;
     op = 'I'; //mark initial state for operator
 }
@@ -232,8 +232,6 @@ int Board::h3() const {
     return conflict;
 }
 
-
-
 //finds the coordinates blank space in the board, represented by variables r and c
 void Board::find_blank (int &r, int &c) {
     for (int a = 0; a < 4; a++) {
@@ -246,6 +244,7 @@ void Board::find_blank (int &r, int &c) {
     }
 }
 
+//length of path from initial state to current state
 int Board::g() const {
     int length = 0;
     Board b = *this;

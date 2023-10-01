@@ -87,6 +87,7 @@ Board best_first_search(Board is, int &num) {
 int main() {
     //Board initial(std::cin); //initial state
 
+    //hard-coded initial state (for debugging)
     int d[4][4] = { {10,5,11,3},
                     {9,4,0,6},
                     {13,7,12,14},

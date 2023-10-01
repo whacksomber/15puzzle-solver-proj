@@ -6,3 +6,4 @@ other attempt/*
 *.exe
 15puzzle
 blegh.cpp
+*.dSYM
