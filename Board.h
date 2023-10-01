@@ -46,9 +46,11 @@ class Board {
 
     private:
         //heuristic functions
-        int h1() const;  //number of misplaced tiles
-        int h2() const;  //sum of the distances of the tiles from their goal positions
-        int h3() const;
+        int h1() const;  //1st heuristic: number of misplaced tiles
+        int h2() const;  //2nd heuristic: sum of the distances of the tiles from their goal positions
+        int h3() const;  //3rd heuristic: linear conflict
+        int h;           //heuristic value
+        void set_heuristic();
 
         int state[4][4]; //the board
         Board *parent;   //parent node

@@ -9,6 +9,9 @@ Board::Board(int s[4][4], Board *p) {
         for (int c = 0; c < 4; c++)
             state[r][c] = s[r][c];
     parent = p;
+
+    //set heuristic
+    set_heuristic();
 }
 
 //constructor (with operator specified)
@@ -18,6 +21,7 @@ Board::Board(int s[4][4], Board *p, char o) {
             state[r][c] = s[r][c];
     parent = p;
     op = o;
+    set_heuristic();
 }
 
 //constructor (from user input)
@@ -39,6 +43,7 @@ Board::Board(std::istream& i) {
 
     parent = NULL;
     op = 'I'; //mark initial state for operator
+    set_heuristic();
 }
 
 //constructor (for debugging, delete later)
@@ -48,6 +53,7 @@ Board::Board(int s[4][4]) {
             state[r][c] = s[r][c];
     parent = NULL;
     op = 'I'; //mark initial state for operator
+    set_heuristic();
 }
 
 //default constructor
@@ -56,6 +62,7 @@ Board::Board() {
         for (int c = 0; c < 4; c++)
             state[r][c] = 0;
     parent = NULL;
+    set_heuristic();
 }
 
 //copy constructor
@@ -65,6 +72,7 @@ Board::Board(Board *b) {
             state[r][c] = b->state[r][c];
     parent = b->parent;
     op = b->op;
+    h = b->h;
 }
 
 //destructor
@@ -77,8 +85,10 @@ void Board::printBoard() const {
     //make 0 colored red
     for (int r = 0; r < 4; r++) {
         for (int c = 0; c < 4; c++) {
-            if (state[r][c] == 0)
-                std::cout << "\033[1;31m" << "X" << "\033[0m" << " ";
+            if (state[r][c] == 0) {
+                //std::cout << "\033[1;31m" << "X" << "\033[0m" << " ";
+                std::cout << "X" << " ";
+            }
             else
                 std::cout << state[r][c] << " ";
         }
@@ -150,9 +160,13 @@ bool Board::isGoal() {
 
 //heuristic functions
 
+void Board::set_heuristic() {
+    h = h1() + h2() + h3();
+}
+
 //returns the heuristic value of the board
 int Board::get_heuristic() const {
-    return h1() + h2() + h3();
+    return h;
 }
 
 //1st heuristic: number of misplaced tiles
@@ -257,7 +271,7 @@ int Board::g() const {
 
 //returns the sum of the heuristic value and the length of the path from the initial state to the current state
 int Board::f() const {
-    return get_heuristic() + g();
+    return h + g();
 }
 
 char Board::get_operator() {
@@ -381,8 +395,9 @@ void Board::operator=(const Board &b) {
             state[r][c] = b.state[r][c];
     parent = b.parent;
     op = b.op;
+    h = b.h;
 }
 
 bool operator<(const Board &b1, const Board &b2) {
-    return b1.get_heuristic() > b2.get_heuristic();
+    return b1.h > b2.h;
 }

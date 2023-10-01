@@ -7,6 +7,8 @@
 
 //TODO: make Board member function to print path, and one to return the depth (# of moves) of the path
 //TODO: make goal global or private
+//TODO: on pc, remove launch.json from .gitignore (for debugging)
+    // make it an exception to everything in .vscode/*
 
 /* best-first search algorithm, returns the solution node
  * is = initital state
@@ -111,7 +113,7 @@ int main() {
     std::cout << "Solution path (with states): " << std::endl;
     //solution.printStatePath(); //print path with states 
     std::cout << "# nodes generated: " << numNodes << std::endl;
-    std::cout << "Length of solution path: " << solution.g() << std::endl;
+    //std::cout << "Length of solution path: " << solution.g() << std::endl;
     std::cout << "Solution path (with operators): " << std::endl;
     //printPath(solution, 1); //print path with operators
 
