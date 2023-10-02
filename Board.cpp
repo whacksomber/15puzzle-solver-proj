@@ -17,7 +17,6 @@ Board::Board(int s[4][4], Board *p) {
             state[r][c] = s[r][c];
     parent = p;
 
-    //set heuristic
     set_heuristic();
 }
 
@@ -28,6 +27,7 @@ Board::Board(int s[4][4], Board *p, char o) {
             state[r][c] = s[r][c];
     parent = p;
     op = o;
+
     set_heuristic();
 }
 
@@ -50,6 +50,7 @@ Board::Board(std::istream& i) {
 
     parent = NULL;
     op = 'I'; //mark initial state for operator
+
     set_heuristic();
 }
 
@@ -60,6 +61,7 @@ Board::Board(int s[4][4]) {
             state[r][c] = s[r][c];
     parent = NULL;
     op = 'I'; //mark initial state for operator
+    
     set_heuristic();
 }
 
@@ -69,6 +71,7 @@ Board::Board() {
         for (int c = 0; c < 4; c++)
             state[r][c] = 0;
     parent = NULL;
+
     set_heuristic();
 }
 
@@ -103,30 +106,38 @@ void Board::printBoard() const {
 
 //prints the path from the initial state to the current state using operators
 void Board::printOperatorPath () {
-    Board b = *this; //create board object b, set to solution on first iteration
+    std::vector<Board> path;
+    Board current = *this;
 
-    while (b.getParent() != NULL) {
-        char o = b.get_operator();
+    // backtrack from the goal state to the initial state
+    while (current.op != 'I') {
+        path.push_back(current);
+        current = current.getParent();
+    }
+    path.push_back(current);
 
-        switch (o) {
+    // print the path in reverse order
+    for (auto it = path.rbegin(); it != path.rend(); ++it) {        
+        switch (it->get_operator()) {
             case 'U':
-                std::cout << "UP" << std::endl;
+                std::cout << "UP";
                 break;
             case 'D':
-                std::cout << "DOWN" << std::endl;
+                std::cout << "DOWN";
                 break;
             case 'L':
-                std::cout << "LEFT" << std::endl;
+                std::cout << "LEFT";
                 break;
             case 'R':
-                std::cout << "RIGHT" << std::endl;
+                std::cout << "RIGHT";
                 break;
-            case 'I':
-                std::cout << "INITIAL" << std::endl;
+            default:
+                std::cout << "INITIAL";
                 break;
         }
-
-        b = *b.getParent(); //set b to parent node
+        //print down arrow (except for last operator)
+        if (it != path.rend() - 1)
+            std::cout << " -> ";
     }
 }
 
@@ -145,7 +156,10 @@ void Board::printStatePath() {
     // print the path in reverse order
     for (auto it = path.rbegin(); it != path.rend(); ++it) {
         it->printBoard();
-        std::cout << std::endl;
+
+        //print down arrow (except for last iteration)
+        if (it != path.rend() - 1)
+            std::cout << "↓" << std::endl;
     }
 }
 
@@ -170,7 +184,7 @@ void Board::set_heuristic() {
 }
 
 //returns the heuristic value of the board
-int Board::get_heuristic() const {
+int Board::get_heuristic() {
     return h;
 }
 
@@ -261,22 +275,6 @@ void Board::find_blank (int &r, int &c) {
             }
         }
     }
-}
-
-//length of path from initial state to current state
-int Board::g() const {
-    int length = 0;
-    Board b = *this;
-    while (b.getParent() != NULL) {
-        length++;
-        b = *b.getParent();
-    }
-    return length;
-}
-
-//returns the sum of the heuristic value and the length of the path from the initial state to the current state
-int Board::f() const {
-    return h + g();
 }
 
 char Board::get_operator() {
@@ -385,24 +383,6 @@ bool Board::operator== (const Board &b) const {
 
 bool Board::operator!=(const Board &b)  const {
     return !(*this == b);
-
-    /* for (int r = 0; r < 4; r++)
-        for (int c = 0; c < 4; c++)
-            if (state[r][c] != b.state[r][c])
-                return true;
-        return false;
-    */
-}
-
-//a problem arises when *this object is being set to its child.
-//the parent of the child is set to the child itself, which is not what we want.
-void Board::operator=(const Board &b) {
-    for (int r = 0; r < 4; r++)
-        for (int c = 0; c < 4; c++)
-            state[r][c] = b.state[r][c];
-    parent = b.parent; //problem = child's parent is set to child itself
-    op = b.op;
-    h = b.h;
 }
 
 bool operator<(const Board &b1, const Board &b2) {
