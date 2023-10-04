@@ -10,16 +10,6 @@ int goal[4][4] = { {1, 2, 3, 4},
                    {13, 14, 15, 0}
                  };
 
-//constructor
-Board::Board(int s[4][4], Board *p) {
-    for (int r = 0; r < 4; r++)
-        for (int c = 0; c < 4; c++)
-            state[r][c] = s[r][c];
-    parent = p;
-
-    set_heuristic();
-}
-
 //constructor (with operator specified)
 Board::Board(int s[4][4], Board *p, char o) {
     for (int r = 0; r < 4; r++)
@@ -29,6 +19,7 @@ Board::Board(int s[4][4], Board *p, char o) {
     op = o;
 
     set_heuristic();
+    set_g();
 }
 
 //constructor (from user input)
@@ -52,17 +43,7 @@ Board::Board(std::istream& i) {
     op = 'I'; //mark initial state for operator
 
     set_heuristic();
-}
-
-//constructor (for debugging, delete later)
-Board::Board(int s[4][4]) {
-    for (int r = 0; r < 4; r++)
-        for (int c = 0; c < 4; c++)
-            state[r][c] = s[r][c];
-    parent = NULL;
-    op = 'I'; //mark initial state for operator
-    
-    set_heuristic();
+    set_g();
 }
 
 //default constructor
@@ -73,6 +54,7 @@ Board::Board() {
     parent = NULL;
 
     set_heuristic();
+    set_g();
 }
 
 //copy constructor
@@ -83,6 +65,7 @@ Board::Board(Board *b) {
     parent = b->parent;
     op = b->op;
     h = b->h;
+    g = b->g;
 }
 
 //destructor
@@ -106,7 +89,7 @@ void Board::printBoard() const {
 
 //prints the path from the initial state to the current state using operators
 void Board::printOperatorPath () {
-    std::vector<Board> path;
+    std::vector<Board> path; 
     Board current = *this;
 
     // backtrack from the goal state to the initial state
@@ -139,6 +122,7 @@ void Board::printOperatorPath () {
         if (it != path.rend() - 1)
             std::cout << " -> ";
     }
+    std::cout << std::endl;
 }
 
 //prints the path from the initial state to the current state using states (with initial state first, then solution)
@@ -175,6 +159,13 @@ bool Board::isGoal() {
                 return false; //misplaced tile, not goal
     
     return true; //no misplaced tiles, goal
+}
+
+void Board::set_g() {
+    if (parent == NULL)
+        g = 0;
+    else
+        g = parent->g + 1;
 }
 
 //heuristic functions
@@ -266,26 +257,26 @@ int Board::h3() const {
 }
 
 //finds the coordinates blank space in the board, represented by variables r and c
-void Board::find_blank (int &r, int &c) {
-    for (int a = 0; a < 4; a++) {
-        for (int b = 0; b < 4; b++) {
-            if (state[a][b] == 0) {
-                r = a;
-                c = b;
-            }
-        }
-    }
+void Board::find_blank(int &r, int &c) {
+    for (r = 0; r < 4; r++)
+        for (c = 0; c < 4; c++)
+            if (state[r][c] == 0)
+                return;
 }
 
 char Board::get_operator() {
     return op;
 }
 
+int Board::get_g() {
+    return g;
+}
+
 //operators
 
 //move blank space up
 Board Board::moveUp() {
-    //find blank space
+    //find blank space coordinates (r, c)
     int r, c;
     find_blank(r, c);
 

@@ -24,9 +24,6 @@ Board best_first_search(Board is, int &num) {
     open_vec.push_back(*n); //push initial state onto vector
 
     while (!n->isGoal()) { //while goal has not yet been found
-        n->printBoard(); //print current state
-        std::cout << std::endl;
-        
         if (open.empty()) { //if open is empty
             std::cout << "No solution found." << std::endl;
             return Board(); //return empty Board object
@@ -37,51 +34,21 @@ Board best_first_search(Board is, int &num) {
         open_vec.erase(std::remove(open_vec.begin(), open_vec.end(), *n), open_vec.end());
         closed.push_back(*n);
 
-        //expand n, get children
-        Board up = n->moveUp();
-        Board down = n->moveDown();
-        Board left = n->moveLeft();
-        Board right = n->moveRight();
+        Board children [4] = {n->moveUp(), n->moveDown(), n->moveLeft(), n->moveRight()}; //array of n's children [up, down, left, right
 
-        //child != n && std::find(closed.begin(), closed.end(), child) == closed.end() &&
-        //std::find_if(open.cbegin(), open.cend(), [&](const Board& b)
-
-        //add children to open if they are not already in open or closed and are results of legal moves
-        if (std::find(closed.begin(), closed.end(), up) == closed.end() && up != *n
-            && std::find(open_vec.begin(), open_vec.end(), up) == open_vec.end() ) {
-            open.push(up);
-            open_vec.push_back(up);
-            num++;
-        }
-        if (std::find(closed.begin(), closed.end(), down) == closed.end() && down != *n
-            && std::find(open_vec.begin(), open_vec.end(), down) == open_vec.end()) {
-            open.push(down);
-            open_vec.push_back(down);
-            num++;
-        }
-        if (std::find(closed.begin(), closed.end(), left) == closed.end() && left != *n
-            && std::find(open_vec.begin(), open_vec.end(), left) == open_vec.end()) {
-            open.push(left);
-            open_vec.push_back(left);
-            num++;
-        }
-        if (std::find(closed.begin(), closed.end(), right) == closed.end() && right != *n
-            && std::find(open_vec.begin(), open_vec.end(), right) == open_vec.end()) {
-            open.push(right);
-            open_vec.push_back(right);
-            num++;
+        for (Board child : children) {
+            if (child != *n && std::find(closed.begin(), closed.end(), child) == closed.end() &&
+                std::find(open_vec.begin(), open_vec.end(), child) == open_vec.end()) {
+                open.push(child);
+                open_vec.push_back(child);
+                num++;
+            }
         }
         
         //set current pointer to point to the top of the priority queue
         Board* temp = new Board(open.top()); //create new Board object, set to top of priority queue
-        n = temp; //set current pointer to point to new Board object
-
-        //clear screen
-        std::cout << "\033[2J\033[1;1H";
+        n = temp;
     }
-
-    //print solution
-    n->printBoard();
 
     return *n; //return solution node
 }
@@ -90,7 +57,7 @@ int main() {
     Board initial(std::cin); //initial state
 
     std::cout << "\nInitial state: " << std::endl;
-    initial.printBoard(); //print initial state
+    initial.printBoard();
 
     std::cout << "\nGenerating solution... " << std::endl;
 
@@ -98,7 +65,7 @@ int main() {
 
     Board solution = best_first_search(initial, numNodes); //find solution
 
-    if (solution == Board()) //if solution is empty Board object (solution not found), return 
+    if (solution == Board()) //return 0 if no solution found (empty Board object)
         return 0;
     
     //output results (if solution is found)
@@ -107,7 +74,7 @@ int main() {
 
     std::cout << "# nodes generated: " << numNodes << std::endl;
 
-    //std::cout << "Length of solution path: " << solution.get_g() << std::endl;
+    std::cout << "Length of solution path: " << solution.get_g() << std::endl;
 
     std::cout << "Solution path (with operators): " << std::endl;
     solution.printOperatorPath();
