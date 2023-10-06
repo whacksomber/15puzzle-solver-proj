@@ -8,6 +8,8 @@ class Board {
         Board();                               //default constructor
         Board(Board *b);                       //copy constructor
         ~Board();                              //destructor
+
+        friend struct BoardHasher; //for hash table
         
         void printBoard() const;   //prints the board
         bool isGoal();             //checks if the board is the goal state
@@ -19,6 +21,7 @@ class Board {
         int get_heuristic(); //returns the heuristic value of the board
         char get_operator(); //returns operator used to achieve current state (U, D, L, R)
         int get_g();         //returns the cost of the path from the initial state to the current state
+        int get_f();         //returns the sum of the cost of the path from the initial state to the current state and the heuristic value of the board
 
         //operators
         Board moveUp();    //move blank space up
@@ -36,11 +39,15 @@ class Board {
         //heuristic functions
         void set_g();
         void set_heuristic(); //sets the heuristic value (member variable h) of the board
+        void set_f();         //sets the sum of the cost of the path from the initial state to the current state and the heuristic value of the board (member variable f)
         int h1() const;       //1st heuristic: number of misplaced tiles
         int h2() const;       //2nd heuristic: sum of the distances of the tiles from their goal positions
         int h3() const;       //3rd heuristic: linear conflict
+        int h4() const;       //4th heuristic: inversion count
+        
         int h;                //heuristic value
         int g;                //cost of the path from the initial state to the current state
+        int f;                //sum of the cost of the path from the initial state to the current state and the heuristic value of the board
 
         int state[4][4]; //the board
         Board *parent;   //parent node

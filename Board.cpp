@@ -20,6 +20,7 @@ Board::Board(int s[4][4], Board *p, char o) {
 
     set_heuristic();
     set_g();
+    set_f();
 }
 
 //constructor (from user input)
@@ -44,6 +45,7 @@ Board::Board(std::istream& i) {
 
     set_heuristic();
     set_g();
+    set_f();
 }
 
 //default constructor
@@ -55,6 +57,7 @@ Board::Board() {
 
     set_heuristic();
     set_g();
+    set_f();
 }
 
 //copy constructor
@@ -66,6 +69,7 @@ Board::Board(Board *b) {
     op = b->op;
     h = b->h;
     g = b->g;
+    f = b->f;
 }
 
 //destructor
@@ -75,13 +79,15 @@ Board::~Board() {
 
 //prints the board
 void Board::printBoard() const {
-    //make 0 colored red
     for (int r = 0; r < 4; r++) {
         for (int c = 0; c < 4; c++) {
-            if (state[r][c] == 0)
-                std::cout << "\033[1;31m" << "X" << "\033[0m" << " ";
-            else
+            if (state[r][c] == 0) //make 0 colored red
+                std::cout << "\033[1;31m" << " X" << "\033[0m" << " ";
+            else {
+                if (state[r][c] < 10)
+                    std::cout << " "; //add space before single digit numbers to make board look nicer
                 std::cout << state[r][c] << " ";
+            }
         }
         std::cout << std::endl;
     }
@@ -143,7 +149,7 @@ void Board::printStatePath() {
 
         //print down arrow (except for last iteration)
         if (it != path.rend() - 1)
-            std::cout << "↓" << std::endl;
+            std::cout << "     ↓" << std::endl;
     }
 }
 
@@ -168,16 +174,16 @@ void Board::set_g() {
         g = parent->g + 1;
 }
 
+void Board::set_f() {
+    f = g + h;
+}
+
 //heuristic functions
 
-void Board::set_heuristic() {
-    h = h1() + h2() + h3();
-}
+void Board::set_heuristic() { h = h1() + h2() + h3() + h4(); }
 
 //returns the heuristic value of the board
-int Board::get_heuristic() {
-    return h;
-}
+int Board::get_heuristic() { return h; }
 
 //1st heuristic: number of misplaced tiles
 int Board::h1() const {
@@ -256,6 +262,31 @@ int Board::h3() const {
     return conflict;
 }
 
+//4th heuristic: inversion count
+int Board::h4() const {
+    int inversionCount = 0;
+    
+    // Flatten the 2D board into a 1D array
+    int flattened[16];
+
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j < 4; ++j)
+            flattened[i * 4 + j] = state[i][j];
+
+    for (int i = 0; i < 16; ++i) {
+        if (flattened[i] == 0) // Assuming the blank tile is represented as 0
+            continue;
+        for (int j = i + 1; j < 16; ++j) {
+            if (flattened[j] == 0)
+                continue;
+            if (flattened[i] > flattened[j])
+                inversionCount++;
+        }
+    }
+    
+    return inversionCount;
+}
+
 //finds the coordinates blank space in the board, represented by variables r and c
 void Board::find_blank(int &r, int &c) {
     for (r = 0; r < 4; r++)
@@ -264,13 +295,11 @@ void Board::find_blank(int &r, int &c) {
                 return;
 }
 
-char Board::get_operator() {
-    return op;
-}
+char Board::get_operator() { return op; }
 
-int Board::get_g() {
-    return g;
-}
+int Board::get_g() { return g; }
+
+int Board::get_f() { return f; }
 
 //operators
 
@@ -282,57 +311,49 @@ Board Board::moveUp() {
 
     //check if blank space can move up
     if (r == 0)
-        return this; //blank space cannot move up, return empty board
+        return *this; //blank space cannot move up, return current board object
 
-    //declare temp array and copy state into it
-    int temp[4][4];
-    std::copy(&state[0][0], &state[0][0] + 16, &temp[0][0]);
+    std::swap(state[r][c], state[r - 1][c]); //swap blank space with tile above it
 
-    std::swap(temp[r][c], temp[r - 1][c]); //swap blank space with tile above it
+    Board result (state, this, 'U'); //return new board with swapped tiles
 
-    Board result (temp, this, 'U'); //return new board with swapped tiles
+    std::swap(state[r][c], state[r - 1][c]); //swap tiles back to restore original state
 
     return result; //return new board with swapped tiles
 }
 
 //move blank space down
 Board Board::moveDown() {
+    //find blank space coordinates (r, c)
     int r, c;
     find_blank(r, c);
 
     //check if blank space can move down
     if (r == 3)
-        return this; //blank space cannot move down, return empty board
+        return *this; //blank space cannot move down, return current board object
 
-    //declare temp array and copy state into it
-    int temp[4][4];
-    std::copy(&state[0][0], &state[0][0] + 16, &temp[0][0]);
+    std::swap(state[r][c], state[r + 1][c]); //swap blank space with tile below it
 
-    //swap blank space with tile below it
-    std::swap(temp[r][c], temp[r + 1][c]);
+    Board result (state, this, 'D'); //return new board with swapped tiles
 
-    Board result (temp, this, 'D'); //return new board with swapped tiles
+    std::swap(state[r][c], state[r + 1][c]); //swap tiles back to restore original state
 
     return result; //return new board with swapped tiles
 }
 
-//move blank space left
 Board Board::moveLeft() {
     int r, c;
     find_blank(r, c);
 
     //check if blank space can move left
     if (c == 0)
-        return this; //blank space cannot move left, return empty board
+        return *this; //blank space cannot move left, return current board object
 
-    //declare temp array and copy state into it
-    int temp[4][4];
-    std::copy(&state[0][0], &state[0][0] + 16, &temp[0][0]);
+    std::swap(state[r][c], state[r][c - 1]); //swap blank space with tile to the left of it
 
-    //swap blank space with tile to the left of it
-    std::swap(temp[r][c], temp[r][c - 1]);
+    Board result (state, this, 'L'); //return new board with swapped tiles
 
-    Board result (temp, this, 'L'); //return new board with swapped tiles
+    std::swap(state[r][c], state[r][c - 1]); //swap tiles back to restore original state
 
     return result; //return new board with swapped tiles
 }
@@ -344,24 +365,19 @@ Board Board::moveRight() {
 
     //check if blank space can move right
     if (c == 3)
-        return this; //blank space cannot move right, return empty board
+        return *this; //blank space cannot move right, return current board object
 
-    //declare temp array and copy state into it
-    int temp[4][4];
-    std::copy(&state[0][0], &state[0][0] + 16, &temp[0][0]);
+    std::swap(state[r][c], state[r][c + 1]); //swap blank space with tile to the right of it
 
-    //swap blank space with tile to the right of it
-    std::swap(temp[r][c], temp[r][c + 1]);
+    Board result (state, this, 'R'); //return new board with swapped tiles
 
-    Board result (temp, this, 'R'); //return new board with swapped tiles
+    std::swap(state[r][c], state[r][c + 1]); //swap tiles back to restore original state
 
     return result; //return new board with swapped tiles
 }
 
 //returns the parent of the board
-Board* Board::getParent() {
-    return parent;
-}
+Board* Board::getParent() { return parent; }
 
 //overloaded operators for Board class
 bool Board::operator== (const Board &b) const {
@@ -372,10 +388,6 @@ bool Board::operator== (const Board &b) const {
     return true;
 }
 
-bool Board::operator!=(const Board &b)  const {
-    return !(*this == b);
-}
+bool Board::operator!=(const Board &b)  const { return !(*this == b); }
 
-bool operator<(const Board &b1, const Board &b2) {
-    return b1.h > b2.h;
-}
+bool operator<(const Board &b1, const Board &b2) { return b1.f > b2.f; }
